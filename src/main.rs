@@ -1,15 +1,17 @@
 use anyhow::Result;
 use clap::Parser;
+use crossterm::cursor;
 use crossterm::event::{DisableMouseCapture, EnableMouseCapture};
 use crossterm::terminal::{EnterAlternateScreen, LeaveAlternateScreen};
 use crossterm::{
     execute,
     terminal::{self, disable_raw_mode, enable_raw_mode},
 };
-use ratatui::backend::CrosstermBackend;
+use ratatui::backend::{Backend, CrosstermBackend};
 use ratatui::Terminal;
-use rsvim::app::{App, FileContents};
+use rsvim::app::App;
 use rsvim::start_app;
+use rsvim::event::EventHandler;
 use std::io::stdout;
 use std::{io, path::PathBuf};
 
@@ -36,8 +38,9 @@ fn main() -> Result<()> {
 
     enable_raw_mode()?;
     execute!(io::stdout(), EnterAlternateScreen, EnableMouseCapture)?;
-    let mut app = App::new(args.filename);
-    let backend = CrosstermBackend::new(std::io::stdout());
+    let events = EventHandler::new(250);
+    let mut backend = CrosstermBackend::new(std::io::stdout());
+    let mut app = App::new(args.filename, events);
     let mut terminal = Terminal::new(backend)?;
     start_app(&mut terminal, &mut app)?;
 

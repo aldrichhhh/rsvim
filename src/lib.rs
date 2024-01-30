@@ -1,12 +1,15 @@
+use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
+use event::UserEvent;
 use ratatui::{backend::Backend, layout::{Constraint, Direction, Layout}, widgets::Paragraph, Terminal};
 use anyhow::Result;
 
 pub mod app;
-use app::App;
+pub mod event;
+use app::{App, Row};
 
 pub fn start_app<B: Backend>(
   terminal: &mut Terminal<B>,
-  app: &mut App
+  app: &mut App,
 ) -> Result<()> {
   loop {
     terminal.draw(|frame| {
@@ -16,7 +19,26 @@ pub fn start_app<B: Backend>(
         .split(frame.size());
       let content = Paragraph::new(format!("{:#?}", app.file.contents));
       frame.render_widget(content, chunks[0]);
-    });
+    })?;
+
+	match app.events.receiver.recv()? {
+		UserEvent::Key(event) => {
+			match event {
+				KeyEvent {
+					code: KeyCode::Char('q'),
+					modifiers: KeyModifiers::CONTROL,
+					..
+				} => break,
+				KeyEvent {
+					code: KeyCode::Char('a'),
+					modifiers: KeyModifiers::NONE,
+					..
+				} => app.file.contents.push(Row::new(String::from("a"))),
+				_ => {}
+			}
+		}
+		_ => {}
+	}
   }
     Ok(())
 }
