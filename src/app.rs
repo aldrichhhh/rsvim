@@ -1,4 +1,4 @@
-use std::io;
+use std::{cmp, io};
 use std::{fs, io::Stdout};
 use std::path::PathBuf;
 
@@ -89,26 +89,47 @@ impl Cursor {
 			cursor_x: 0,
 			cursor_y: 0,
 			max_x: win_size.columns_rows.width as usize,
-			max_y: win_size.columns_rows.height as usize,
+			max_y: (win_size.columns_rows.height - 2) as usize,
 		}
 	}
 
-	pub fn move_cursor(&mut self, direction: KeyCode) {
+	pub fn move_cursor(&mut self, direction: KeyCode, contents: &mut FileContents) {
 		match direction {
 			KeyCode::Left => {
-				self.cursor_x = self.cursor_x.saturating_sub(1);
+				if self.cursor_x == 0 && self.cursor_y != 0 {
+					self.cursor_y -= 1;
+					self.cursor_x = contents.get_row(self.cursor_y).length()
+				}
+				else {
+					self.cursor_x = self.cursor_x.saturating_sub(1);
+				}
 			}
 			KeyCode::Right => {
-				self.cursor_x += 1;
+				if self.cursor_x < contents.get_row(self.cursor_y).length() {
+					self.cursor_x += 1;
+				}
+				// Wrap to the next line
+				else if self.cursor_y < self.max_y {
+					self.cursor_y += 1;
+					self.cursor_x = 0;
+				}
 			}
 			KeyCode::Up => {
 				self.cursor_y = self.cursor_y.saturating_sub(1);
 			}
 			KeyCode::Down => {
-				self.cursor_y += 1;
+				if self.cursor_y < self.max_y {
+					self.cursor_y += 1;
+				}
 			}
 			_ => {}
 		}
+		let max_len = if self.cursor_y < self.max_y {
+			contents.get_row(self.cursor_y).length()
+		} else {
+			0
+		};
+		self.cursor_x = cmp::min(self.cursor_x, max_len);
 	}
 }
 

@@ -1,6 +1,6 @@
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use event::UserEvent;
-use ratatui::{backend::Backend, layout::{Constraint, Direction, Layout}, widgets::Paragraph, Terminal};
+use ratatui::{backend::Backend, layout::{Constraint, Direction, Layout}, widgets::{Paragraph, Wrap}, Terminal};
 use anyhow::Result;
 
 pub mod app;
@@ -13,15 +13,17 @@ pub fn start_app<B: Backend>(
 ) -> Result<()> {
   loop {
     terminal.draw(|frame| {
-      let chunks = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints([Constraint::Percentage(98), Constraint::Percentage(2)])
-        .split(frame.size());
-      let content = Paragraph::new(
-				app.file.contents.iter().map(|row| row.to_string() + "\r\n").collect::<String>()
-			);
-      frame.render_widget(content, chunks[0]);
-	  frame.set_cursor(app.cursor.cursor_x as u16, app.cursor.cursor_y as u16);
+    let chunks = Layout::default()
+      .direction(Direction::Vertical)
+      .constraints([Constraint::Percentage(98), Constraint::Percentage(2)])
+      .split(frame.size());
+    let content = Paragraph::new(
+		app.file.contents.iter().map(|row| row.to_string() + "\r\n").collect::<String>()
+	).wrap(Wrap {trim: false});
+	
+	frame.render_widget(Paragraph::new("Mode: Write"), chunks[1]);
+    frame.render_widget(content, chunks[0]);
+	frame.set_cursor(app.cursor.cursor_x as u16, app.cursor.cursor_y as u16);
     })?;
 
 	match app.events.receiver.recv()? {
@@ -31,13 +33,15 @@ pub fn start_app<B: Backend>(
 					code: code @ (KeyCode::Left | KeyCode::Right
 					| KeyCode::Up | KeyCode::Down),
 					..
-				} => app.cursor.move_cursor(code),
+				} => app.cursor.move_cursor(code, &mut app.file),
 				KeyEvent {
 					code: KeyCode::Backspace,
 					..
 				} => {
-					app.file.get_row(app.cursor.cursor_y).delete_char(app.cursor.cursor_x - 1);
-					app.cursor.cursor_x -= 1;
+					if app.cursor.cursor_x > 0 {
+						app.file.get_row(app.cursor.cursor_y).delete_char(app.cursor.cursor_x - 1);
+						app.cursor.cursor_x -= 1;
+					}
 				}
 				KeyEvent {
 					code: KeyCode::Delete,
