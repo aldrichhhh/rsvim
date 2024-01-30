@@ -48,6 +48,11 @@ pub fn start_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> Resul
                             .get_row(app.cursor.cursor_y)
                             .delete_char(app.cursor.cursor_x - 1);
                         app.cursor.cursor_x -= 1;
+                    } else if app.cursor.cursor_x == 0 && app.cursor.cursor_y > 0 {
+                        let cursor_pos = app.file.get_row(app.cursor.cursor_y - 1).length();
+                        app.join_rows();
+                        app.cursor.cursor_y -= 1;
+                        app.cursor.cursor_x = cursor_pos;
                     }
                 }
                 KeyEvent {
@@ -63,7 +68,7 @@ pub fn start_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> Resul
                 KeyEvent {
                     code: KeyCode::Enter,
                     ..
-                } => app.add_newline(app.cursor.cursor_y, app.cursor.cursor_x),
+                } => app.add_newline(),
                 KeyEvent {
                     code: KeyCode::Char('q'),
                     modifiers: KeyModifiers::CONTROL,

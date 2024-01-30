@@ -149,12 +149,24 @@ impl App {
         }
     }
 
-    pub fn add_newline(&mut self, y_idx: usize, x_idx: usize) {
-        let current_row = self.file.get_row(y_idx);
-        let new_row = Row::new(String::from(&current_row.to_string()[x_idx..]));
-        current_row.update_row(&current_row.to_string()[..x_idx]);
-        self.file.contents.insert(y_idx + 1, new_row);
+    pub fn add_newline(&mut self) {
+        let current_row = self.file.get_row(self.cursor.cursor_y);
+        let new_row = Row::new(String::from(
+            &current_row.to_string()[self.cursor.cursor_x..],
+        ));
+        current_row.update_row(&current_row.to_string()[..self.cursor.cursor_x]);
+        self.file.contents.insert(self.cursor.cursor_y + 1, new_row);
         self.cursor.cursor_x = 0;
         self.cursor.cursor_y += 1;
+    }
+
+    pub fn join_rows(&mut self) {
+        let current_row = self.file.contents.remove(self.cursor.cursor_y);
+        let previous_row = self.file.get_row(self.cursor.cursor_y - 1);
+        previous_row.update_row(&format!(
+            "{}{}",
+            previous_row.to_string(),
+            current_row.to_string()
+        ))
     }
 }
