@@ -10,8 +10,8 @@ use crossterm::{
 use ratatui::backend::{Backend, CrosstermBackend};
 use ratatui::Terminal;
 use rsvim::app::App;
-use rsvim::start_app;
 use rsvim::event::EventHandler;
+use rsvim::start_app;
 use std::io::stdout;
 use std::{io, path::PathBuf};
 
