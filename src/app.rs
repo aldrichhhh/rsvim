@@ -88,22 +88,22 @@ impl Cursor {
         }
     }
 
-    pub fn move_cursor(&mut self, direction: KeyCode, contents: &mut FileContents) {
+    pub fn move_cursor(&mut self, direction: KeyCode, file_content: &mut FileContents) {
         match direction {
             KeyCode::Left => {
                 if self.cursor_x == 0 && self.cursor_y != 0 {
                     self.cursor_y -= 1;
-                    self.cursor_x = contents.get_row(self.cursor_y).length()
+                    self.cursor_x = file_content.get_row(self.cursor_y).length()
                 } else {
                     self.cursor_x = self.cursor_x.saturating_sub(1);
                 }
             }
             KeyCode::Right => {
-                if self.cursor_x < contents.get_row(self.cursor_y).length() {
+                if self.cursor_x < file_content.get_row(self.cursor_y).length() {
                     self.cursor_x += 1;
                 }
                 // Wrap to the next line
-                else if self.cursor_y < self.max_y {
+                else if self.cursor_y < self.max_y && self.cursor_y < file_content.contents.len() - 1 {
                     self.cursor_y += 1;
                     self.cursor_x = 0;
                 }
@@ -112,14 +112,14 @@ impl Cursor {
                 self.cursor_y = self.cursor_y.saturating_sub(1);
             }
             KeyCode::Down => {
-                if self.cursor_y < self.max_y {
+                if self.cursor_y < self.max_y && self.cursor_y < file_content.contents.len() - 1 {
                     self.cursor_y += 1;
                 }
             }
             _ => {}
         }
         let max_len = if self.cursor_y < self.max_y {
-            contents.get_row(self.cursor_y).length()
+            file_content.get_row(self.cursor_y).length()
         } else {
             0
         };
