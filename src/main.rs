@@ -40,7 +40,7 @@ fn main() -> Result<()> {
     execute!(io::stdout(), EnterAlternateScreen, EnableMouseCapture)?;
     let events = EventHandler::new(250);
     let mut backend = CrosstermBackend::new(std::io::stdout());
-    let mut app = App::new(args.filename, events);
+    let mut app = App::new(args.filename, events, &backend.window_size().unwrap());
     let mut terminal = Terminal::new(backend)?;
     start_app(&mut terminal, &mut app)?;
 

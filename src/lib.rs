@@ -19,24 +19,26 @@ pub fn start_app<B: Backend>(
         .split(frame.size());
       let content = Paragraph::new(format!("{:#?}", app.file.contents));
       frame.render_widget(content, chunks[0]);
+	  frame.set_cursor(app.cursor.cursor_x as u16, app.cursor.cursor_y as u16);
     })?;
 
 	match app.events.receiver.recv()? {
 		UserEvent::Key(event) => {
 			match event {
 				KeyEvent {
+					code: code @ (KeyCode::Left | KeyCode::Right
+					| KeyCode::Up | KeyCode::Down),
+					..
+				} => app.cursor.move_cursor(code),
+				KeyEvent {
 					code: KeyCode::Char('q'),
 					modifiers: KeyModifiers::CONTROL,
 					..
 				} => break,
-				KeyEvent {
-					code: KeyCode::Char('a'),
-					modifiers: KeyModifiers::NONE,
-					..
-				} => app.file.contents.push(Row::new(String::from("a"))),
 				_ => {}
 			}
 		}
+		UserEvent::Mouse(_mouseevent) => {}
 		_ => {}
 	}
   }
