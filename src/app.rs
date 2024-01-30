@@ -33,6 +33,9 @@ impl Row {
     pub fn length(&self) -> usize {
         self.row_content.len()
     }
+    pub fn update_row(&mut self, new_value: &str) {
+        self.row_content = String::from(new_value);
+    }
 }
 
 impl ToString for Row {
@@ -103,7 +106,9 @@ impl Cursor {
                     self.cursor_x += 1;
                 }
                 // Wrap to the next line
-                else if self.cursor_y < self.max_y && self.cursor_y < file_content.contents.len() - 1 {
+                else if self.cursor_y < self.max_y
+                    && self.cursor_y < file_content.contents.len() - 1
+                {
                     self.cursor_y += 1;
                     self.cursor_x = 0;
                 }
@@ -142,5 +147,14 @@ impl App {
             events,
             cursor: Cursor::new(window_size),
         }
+    }
+
+    pub fn add_newline(&mut self, y_idx: usize, x_idx: usize) {
+        let current_row = self.file.get_row(y_idx);
+        let new_row = Row::new(String::from(&current_row.to_string()[x_idx..]));
+        current_row.update_row(&current_row.to_string()[..x_idx]);
+        self.file.contents.insert(y_idx + 1, new_row);
+        self.cursor.cursor_x = 0;
+        self.cursor.cursor_y += 1;
     }
 }

@@ -61,6 +61,10 @@ pub fn start_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> Resul
                     }
                 }
                 KeyEvent {
+                    code: KeyCode::Enter,
+                    ..
+                } => app.add_newline(app.cursor.cursor_y, app.cursor.cursor_x),
+                KeyEvent {
                     code: KeyCode::Char('q'),
                     modifiers: KeyModifiers::CONTROL,
                     ..
