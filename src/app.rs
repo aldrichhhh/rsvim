@@ -21,6 +21,24 @@ impl Row {
 	pub fn new(row_content: String) -> Self {
 		Self { row_content }
 	}
+
+	pub fn insert_char(&mut self, idx: usize, ch: char) {
+		self.row_content.insert(idx, ch);
+	}
+
+	pub fn delete_char(&mut self, idx: usize) {
+		self.row_content.remove(idx);
+	}
+
+	pub fn length(&self) -> usize {
+		self.row_content.len()
+	}
+}
+
+impl ToString for Row {
+	fn to_string(&self) -> String {
+		self.row_content.clone()
+	}
 }
 
 #[derive(Default, Debug)]
@@ -51,6 +69,10 @@ impl FileContents {
 				})
 				.collect()
 		}
+	}
+
+	pub fn get_row(&mut self, idx: usize) -> &mut Row {
+		&mut self.contents[idx]
 	}
 }
 
